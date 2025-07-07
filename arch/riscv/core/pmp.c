@@ -204,6 +204,7 @@ static bool set_pmp_entry(unsigned int *index_p, uint8_t perm,
 	return ok;
 }
 
+#ifdef CONFIG_PMP_STACK_GUARD
 static inline bool set_pmp_mprv_catchall(unsigned int *index_p,
 					 unsigned long *pmp_addr, unsigned long *pmp_cfg,
 					 unsigned int index_limit)
@@ -231,6 +232,7 @@ static inline bool set_pmp_mprv_catchall(unsigned int *index_p,
 
 	return ok;
 }
+#endif /* CONFIG_PMP_STACK_GUARD */
 
 /**
  * @brief Write a range of PMP entries to corresponding PMP registers
@@ -447,6 +449,7 @@ void z_riscv_pmp_init(void)
 /**
  * @Brief Initialize the per-thread PMP register copy with global values.
  */
+#if (defined(CONFIG_PMP_STACK_GUARD) && defined(CONFIG_MULTITHREADING)) || defined(CONFIG_USERSPACE)
 static inline unsigned int z_riscv_pmp_thread_init(unsigned long *pmp_addr,
 						   unsigned long *pmp_cfg,
 						   unsigned int index_limit)
@@ -466,6 +469,7 @@ static inline unsigned int z_riscv_pmp_thread_init(unsigned long *pmp_addr,
 
 	return global_pmp_end_index;
 }
+#endif
 
 #ifdef CONFIG_PMP_STACK_GUARD
 
@@ -752,8 +756,8 @@ int arch_buffer_validate(const void *addr, size_t size, int write)
 	int ret = -1;
 
 	/* Check if this is on the stack */
-	if (IS_WITHIN(start, size, arch_current_thread()->stack_info.start,
-		      arch_current_thread()->stack_info.size)) {
+	if (IS_WITHIN(start, size,
+		      _current->stack_info.start, _current->stack_info.size)) {
 		return 0;
 	}
 
@@ -768,7 +772,7 @@ int arch_buffer_validate(const void *addr, size_t size, int write)
 	}
 
 	/* Look for a matching partition in our memory domain */
-	struct k_mem_domain *domain = arch_current_thread()->mem_domain_info.mem_domain;
+	struct k_mem_domain *domain = _current->mem_domain_info.mem_domain;
 	int p_idx, remaining_partitions;
 	k_spinlock_key_t key = k_spin_lock(&z_mem_domain_lock);
 

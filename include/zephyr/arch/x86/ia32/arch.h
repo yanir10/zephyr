@@ -7,8 +7,9 @@
 /**
  * @file
  * @brief IA-32 specific kernel interface header
- * This header contains the IA-32 specific kernel interface.  It is included
- * by the generic kernel interface header (include/arch/cpu.h)
+ *
+ * This header contains the IA-32 portion of the X86 specific kernel
+ * interface (see include/zephyr/arch/x86/cpu.h).
  */
 
 #ifndef ZEPHYR_INCLUDE_ARCH_X86_IA32_ARCH_H_
@@ -305,7 +306,7 @@ static inline void arch_isr_direct_footer(int swap)
 	 * 3) Next thread to run in the ready queue is not this thread
 	 */
 	if (swap != 0 && _kernel.cpus[0].nested == 0 &&
-	    _kernel.ready_q.cache != arch_current_thread()) {
+	    _kernel.ready_q.cache != _current) {
 		unsigned int flags;
 
 		/* Fetch EFLAGS argument to z_swap() */

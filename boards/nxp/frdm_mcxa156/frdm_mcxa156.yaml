@@ -13,7 +13,6 @@ flash: 1024
 toolchain:
   - zephyr
   - gnuarmemb
-  - xtools
 supported:
   - adc
   - flash
@@ -21,8 +20,11 @@ supported:
   - can
   - counter
   - dac
+  - dma
   - i2c
+  - i3c
   - pwm
+  - spi
   - usb_device
   - usbd
   - watchdog

@@ -114,11 +114,12 @@ static int create_free_list(struct k_mem_slab *slab)
 	slab->free_list = NULL;
 	p = slab->buffer + slab->info.block_size * (slab->info.num_blocks - 1);
 
-	while (p >= slab->buffer) {
+	for (int i = slab->info.num_blocks - 1; i >= 0; i--) {
 		*(char **)p = slab->free_list;
 		slab->free_list = p;
 		p -= slab->info.block_size;
 	}
+
 	return 0;
 }
 
@@ -252,7 +253,7 @@ int k_mem_slab_alloc(struct k_mem_slab *slab, void **mem, k_timeout_t timeout)
 		/* wait for a free block or timeout */
 		result = z_pend_curr(&slab->lock, key, &slab->wait_q, timeout);
 		if (result == 0) {
-			*mem = arch_current_thread()->base.swap_data;
+			*mem = _current->base.swap_data;
 		}
 
 		SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_mem_slab, alloc, slab, timeout, result);
